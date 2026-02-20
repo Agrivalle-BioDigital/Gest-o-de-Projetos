@@ -9,7 +9,7 @@ import webview
 import urllib.request
 
 # --- CONFIGURAÇÕES DE ATUALIZAÇÃO ---
-GITHUB_URL = "https://raw.githubusercontent.com/Agrivalle-BioDigital/Gest-o-de-Projetos/refs/heads/main/dashboard.py"
+GITHUB_URL = "https://raw.githubusercontent.com/Agrivalle-BioDigital/Gest-o-de-Projetos/refs/heads/CEPA/dashboard.py"
 
 def obter_diretorio_base():
     """Garante que o arquivo seja salvo/lido na mesma pasta do .exe, e não na pasta temporária"""
@@ -37,7 +37,7 @@ def start_streamlit():
         LOCAL_APP,
         "--global.developmentMode=false",
         "--server.headless=true",
-        "--server.port=8501",
+        "--server.port=8502",
         "--server.address=localhost",
     ]
 
@@ -52,7 +52,7 @@ def start_streamlit():
     finally:
         signal.signal = original_signal
 
-def wait_for_server(port=8501):
+def wait_for_server(port=8502):
     """Aguarda o servidor estar online para evitar tela branca"""
     retries = 0
     while retries < 30: # Tenta por 15 segundos
@@ -83,8 +83,8 @@ if __name__ == "__main__":
     t.start()
 
     # 3. Abre a Janela do Aplicativo
-    if wait_for_server(8501):
-        webview.create_window("Gestão de Projetos", "http://localhost:8501")
+    if wait_for_server(8502):
+        webview.create_window("Gestão de Projetos", "http://localhost:8502")
         webview.start()
     else:
         webview.create_window("Erro", html="<h1>Erro: O servidor Streamlit não iniciou a tempo.</h1>")
