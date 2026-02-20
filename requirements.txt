@@ -1,0 +1,15 @@
+# --- Interface e Visualização ---
+streamlit
+pandas
+plotly
+
+# --- Manipulação de Excel ---
+openpyxl
+pywin32
+
+# --- Utilitários ---
+filelock
+pywebview
+
+# --- Empacotamento (Opcional, mas recomendado para histórico) ---
+pyinstaller

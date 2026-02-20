@@ -1,0 +1,21 @@
+# Ignorar arquivos do Excel
+*.xlsx
+*.xls
+*.xlsm
+*.xlsb
+*.csv
+
+# Ignorar arquivos temporários e ocultos do Excel (que começam com ~$)
+~$*.xlsx
+~$*.xlsm
+~$*.xls
+
+# Ignorar o arquivo de lock específico
+Sumarização de Atividades.xlsm.lock
+
+# Ignorar qualquer outro arquivo de lock genérico
+*.lock
+# Arquivos e pastas gerados pelo PyInstaller
+*.spec
+build/
+dist/
