@@ -181,7 +181,7 @@ def carregar_dados():
             df['Ano_Inicio'] = df['Inicio_Projeto'].dt.year.fillna(0).astype(int)
             df['Mes_Inicio'] = df['Inicio_Projeto'].dt.month_name()
             
-        cols_str = ['Projeto', 'Cliente', 'Status_Projeto', 'Concluido', 'Status_Prazo_Tarefa', 'Classe', 'Objetivo', 'Tipo_Obs', 'Texto_Obs', 'Resumo', 'Passos_Criticos', 'Riscos']
+        cols_str = ['Projeto', 'Área', 'Status_Projeto', 'Concluido', 'Status_Prazo_Tarefa', 'Classe', 'Objetivo', 'Tipo_Obs', 'Texto_Obs', 'Resumo', 'Passos_Criticos', 'Riscos']
         for col in cols_str:
              if col in df.columns:
                 df[col] = df[col].astype(str).str.strip().replace('nan', '')
@@ -301,7 +301,7 @@ def reconstruir_banco_de_dados():
                     if not tarefas.empty:
                         tarefas['Projeto'] = str(projeto_nome)
                         tarefas['Status_Projeto'] = status
-                        tarefas['Cliente'] = cliente
+                        tarefas['Área'] = cliente
                         tarefas['Prazo_Projeto'] = prazo_proj
                         tarefas['Inicio_Projeto'] = inicio_proj
                         tarefas['Data_Conclusao_Projeto'] = data_conclusao_proj
@@ -557,7 +557,7 @@ def modal_novo_projeto():
     
     col1, col2 = st.columns(2)
     titulo_novo = col1.text_input("Título do Projeto *", max_chars=30)
-    cliente_novo = col2.text_input("Cliente(s) *", help="Separe por ponto-e-vírgula se for mais de um.")
+    cliente_novo = col2.text_input("Área(s) *", help="Separe por ponto-e-vírgula se for mais de um.")
     
     col3, col4 = st.columns(2)
     classe_novo = col3.selectbox("Prioridade", ["Alta", "Média", "Baixa"], index=1)
@@ -645,12 +645,12 @@ if not df.empty:
     st.sidebar.markdown("<br><hr style='border:1px solid white; opacity:0.3;'><br>", unsafe_allow_html=True)
     st.sidebar.header("Filtros Globais")
     
-    todos_clientes = df['Cliente'].dropna().unique().tolist()
+    todos_clientes = df['Área'].dropna().unique().tolist()
     set_clientes = set()
     for item in todos_clientes:
         for p in item.split(';'): set_clientes.add(p.strip())
     
-    cli_sel = st.sidebar.selectbox("Cliente", ['Todos'] + sorted(list(set_clientes)))
+    cli_sel = st.sidebar.selectbox("Área", ['Todos'] + sorted(list(set_clientes)))
     sts_sel = st.sidebar.selectbox("Status Projeto", ['Todos'] + sorted(df['Status_Projeto'].unique().tolist()))
     
     if 'Ano_Inicio' in df.columns:
@@ -671,7 +671,7 @@ if not df.empty:
                 st.sidebar.error(f"Erro: {msg}")
 
     df_f = df.copy()
-    if cli_sel != 'Todos': df_f = df_f[df_f['Cliente'].str.contains(cli_sel, regex=False)]
+    if cli_sel != 'Todos': df_f = df_f[df_f['Área'].str.contains(cli_sel, regex=False)]
     if sts_sel != 'Todos': df_f = df_f[df_f['Status_Projeto'] == sts_sel]
     if ano_sel: df_f = df_f[df_f['Ano_Inicio'].isin(ano_sel)]
 
@@ -704,8 +704,8 @@ if not df.empty:
             st.markdown('</div>', unsafe_allow_html=True)
 
             st.markdown(f"<h1 style='color: #FF4F00; margin-bottom: 0rem;'>{info['Projeto']}</h1>", unsafe_allow_html=True)
-            cliente_display = info.get('Cliente', 'Não informado')
-            st.markdown(f"<h4 style='color: #666; margin-top: 0rem; font-weight: 500;'>Cliente(s): {cliente_display}</h4>", unsafe_allow_html=True)
+            cliente_display = info.get('Área', 'Não informado')
+            st.markdown(f"<h4 style='color: #666; margin-top: 0rem; font-weight: 500;'>Área(s): {cliente_display}</h4>", unsafe_allow_html=True)
             st.write("")
             
             hoje = datetime.today()
@@ -948,9 +948,9 @@ if not df.empty:
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 df_analise = df_f.copy()
-                df_analise['Num_Clientes'] = df_analise['Cliente'].str.count(';') + 1
-                df_analise['Peso_Rateio'] = 1 / df_analise['Num_Clientes']
-                df_exp = df_analise.assign(Cli=df_analise['Cliente'].str.split(';')).explode('Cli')
+                df_analise['Num_Área'] = df_analise['Área'].str.count(';') + 1
+                df_analise['Peso_Rateio'] = 1 / df_analise['Num_Área']
+                df_exp = df_analise.assign(Cli=df_analise['Área'].str.split(';')).explode('Cli')
                 df_exp['Cli'] = df_exp['Cli'].str.strip()
                 
                 if metrica_selecionada == "Esforço (Planejado vs Atraso)":
@@ -963,7 +963,7 @@ if not df.empty:
                     fig = go.Figure()
                     fig.add_trace(go.Bar(y=df_chart['Cli'], x=df_chart['Plan_Pond'], name='Dias Planejados', orientation='h', marker_color='#FBC02D', text=df_chart['Plan_Pond'].round(0), textposition='auto'))
                     fig.add_trace(go.Bar(y=df_chart['Cli'], x=df_chart['Atraso_Pond'], name='Dias de Atraso', orientation='h', marker_color='#D32F2F', text=df_chart['Atraso_Pond'].apply(lambda x: f"+{x:.0f}" if x > 0 else ""), textposition='inside'))
-                    fig.update_layout(barmode='stack', xaxis_title="Dias Totais (Rateado)", yaxis_title="Cliente", legend=dict(orientation="h", y=1.1), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+                    fig.update_layout(barmode='stack', xaxis_title="Dias Totais (Rateado)", yaxis_title="Área", legend=dict(orientation="h", y=1.1), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
                     st.plotly_chart(fig, use_container_width=True)
                 else:
                     if metrica_selecionada == "Volume de Projetos":
@@ -984,7 +984,7 @@ if not df.empty:
                     df_chart = df_chart.sort_values('Valor', ascending=True)
                     fig = px.bar(df_chart, x='Valor', y='Cli', orientation='h', text='Valor')
                     fig.update_traces(marker_color=cor_barra, texttemplate=text_template, textposition='outside')
-                    fig.update_layout(xaxis_title=eixo_x_title, yaxis_title="Cliente", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
+                    fig.update_layout(xaxis_title=eixo_x_title, yaxis_title="Área", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
                     st.plotly_chart(fig, use_container_width=True)
 
     elif st.session_state.aba_ativa == "Cronograma & Prazos":
@@ -1190,7 +1190,7 @@ if not df.empty:
                         st.divider()
 
     elif st.session_state.aba_ativa == "Dados Detalhados":
-        cols_show = ['Projeto', 'Cliente', 'Classe', 'Inicio_Projeto', 'Prazo_Projeto', 'Dias_Planejados', 'Dias_Atraso', 'Percentual_Conclusao', 'Status_Projeto']
+        cols_show = ['Projeto', 'Área', 'Classe', 'Inicio_Projeto', 'Prazo_Projeto', 'Dias_Planejados', 'Dias_Atraso', 'Percentual_Conclusao', 'Status_Projeto']
         final_cols = [c for c in cols_show if c in df_f.columns]
         df_show = df_f[final_cols].copy()
         
@@ -1208,7 +1208,7 @@ if not df.empty:
                 "Dias_Atraso": st.column_config.NumberColumn("Atraso (Dias)", format="%d"),
                 "Percentual_Conclusao": st.column_config.ProgressColumn("Progresso", format="%d%%", min_value=0, max_value=100),
                 "Projeto": st.column_config.TextColumn("Projeto"),
-                "Cliente": st.column_config.TextColumn("Cliente(s)"),
+                "Área": st.column_config.TextColumn("Área(s)"),
                 "Classe": st.column_config.TextColumn("Prioridade"),
                 "Status_Projeto": st.column_config.TextColumn("Status")
             }
