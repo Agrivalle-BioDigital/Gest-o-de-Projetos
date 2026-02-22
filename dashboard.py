@@ -416,6 +416,9 @@ def salvar_alteracoes_no_excel(projeto_nome, dados_editados, status_tarefas, con
 
                 max_row = ws.UsedRange.Rows.Count
                 linha_vazia_tarefa = linha_inicio
+                
+                # Criamos um contador para saber em qual tarefa estamos no Excel
+                tarefa_idx = 0 
 
                 for row in range(linha_inicio, max_row + 10):
                     desc = ws.Cells(row, 11).Value
@@ -426,8 +429,11 @@ def salvar_alteracoes_no_excel(projeto_nome, dados_editados, status_tarefas, con
                     linha_vazia_tarefa = row + 1 
                     desc_str = str(desc).strip()
                     
-                    if desc_str in status_tarefas:
-                        dados_t = status_tarefas[desc_str]
+                    # Montamos a mesma chave única gerada no frontend
+                    chave_busca = f"{tarefa_idx}_{desc_str}"
+                    
+                    if chave_busca in status_tarefas:
+                        dados_t = status_tarefas[chave_busca]
                         ws.Cells(row, 12).Value = bool(dados_t['concluido'])
                         if dados_t['prazo']: ws.Cells(row, 13).Value = formatar_data(dados_t['prazo'])
                         
@@ -437,6 +443,9 @@ def salvar_alteracoes_no_excel(projeto_nome, dados_editados, status_tarefas, con
                             else: ws.Cells(row, 14).Value = formatar_data(datetime.today())
                         else:
                             ws.Cells(row, 14).Value = None 
+                    
+                    # Incrementa o contador para a próxima tarefa encontrada no Excel
+                    tarefa_idx += 1
 
                 if nova_tarefa_desc:
                     ws.Cells(linha_vazia_tarefa, 11).Value = nova_tarefa_desc
@@ -448,7 +457,7 @@ def salvar_alteracoes_no_excel(projeto_nome, dados_editados, status_tarefas, con
 
             finally:
                 excel.Quit()
-                pythoncom.CoUninitialize() 
+                pythoncom.CoUninitialize()
                 
         sucesso_bd, msg = reconstruir_banco_de_dados()
         carregar_dados.clear()
@@ -816,7 +825,8 @@ if not df.empty:
                     h2.markdown("**Alterar Prazo:**")
                     h3.markdown("**Data de Conclusão:**")
                     
-                    for _, t in df_tarefas_exibir.iterrows():
+                    # Usamos enumerate para gerar um índice (i) único para cada linha
+                    for i, (_, t) in enumerate(df_tarefas_exibir.iterrows()):
                         desc = str(t['Descricao']).strip()
                         is_done = t['Concluido'] == 'Sim'
                         
@@ -825,13 +835,18 @@ if not df.empty:
                         
                         c1, c2, c3 = st.columns([2, 1, 1])
                         with c1:
-                            done_new = st.checkbox(f"{desc}", value=is_done, help=f"Status atual: {t['Status_Prazo_Tarefa']}")
+                            # Adicionamos o 'i' na key do checkbox também por segurança
+                            done_new = st.checkbox(f"{desc}", value=is_done, key=f"chk_{i}_{desc}", help=f"Status atual: {t['Status_Prazo_Tarefa']}")
                         with c2:
-                            prazo_new = st.date_input(f"Prazo", value=prazo_t_atual, key=f"dt_p_{desc}", label_visibility="collapsed")
+                            # Adicionamos o 'i' na key do date_input do prazo
+                            prazo_new = st.date_input(f"Prazo", value=prazo_t_atual, key=f"dt_p_{i}_{desc}", label_visibility="collapsed")
                         with c3:
-                            conclusao_new = st.date_input(f"Conclusão", value=conclusao_t_atual, key=f"dt_c_{desc}", label_visibility="collapsed")
+                            # Adicionamos o 'i' na key do date_input da conclusão
+                            conclusao_new = st.date_input(f"Conclusão", value=conclusao_t_atual, key=f"dt_c_{i}_{desc}", label_visibility="collapsed")
                         
-                        tarefas_status[desc] = {'concluido': done_new, 'prazo': prazo_new, 'data_conclusao': conclusao_new}
+                        # MUDANÇA AQUI: Criamos uma chave única combinando o índice e a descrição
+                        chave_unica = f"{i}_{desc}"
+                        tarefas_status[chave_unica] = {'concluido': done_new, 'prazo': prazo_new, 'data_conclusao': conclusao_new}
 
                     st.write("---")
                     st.subheader("➕ Adicionar Nova Tarefa (Opcional)")
