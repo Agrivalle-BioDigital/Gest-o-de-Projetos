@@ -791,7 +791,7 @@ if not df.empty:
                 )
 
             else:
-                st.info("💡 **Modo de Edição Ativo:** Altere os dados abaixo e clique em 'Salvar Alterações'.")
+                st.info("**Modo de Edição Ativo:** Altere os dados abaixo e clique em 'Salvar Alterações'.")
                 
                 with st.form("form_edicao_projeto"):
                     st.subheader("Prazos Principais do Projeto")
