@@ -614,6 +614,20 @@ def modal_novo_projeto():
 # =====================================================================
 # --- INTERFACE PRINCIPAL ---
 # =====================================================================
+# --- NOVO: AUTO-INICIALIZAÇÃO DO BANCO DE DADOS ---
+if 'banco_inicializado' not in st.session_state:
+    caminho_entrada = obter_caminho(ARQUIVO_ENTRADA)
+    
+    # Só tenta reconstruir se a planilha macro (CEPA Ações.xlsm) existir na pasta
+    if os.path.exists(caminho_entrada):
+        with st.spinner("Inicializando e Sincronizando banco de dados..."):
+            reconstruir_banco_de_dados()
+            carregar_dados.clear() # Limpa a memória para garantir a leitura fresca
+            
+    # Marca que já foi inicializado para não travar o app nos próximos cliques
+    st.session_state.banco_inicializado = True
+# --------------------------------------------------
+
 df = carregar_dados()
 
 if not df.empty:
