@@ -891,22 +891,7 @@ if not df.empty:
         </div>
         """
 
-      # =====================================================================
-    # --- TELA 1: VISÃO GERAL COM ABAS E BORDA INFERIOR ---
-    # =====================================================================
-    st.markdown("<hr style='border: 1px solid rgba(150,150,150,0.3); margin-top: 0; margin-bottom: 1rem;'>", unsafe_allow_html=True)
-    st.markdown("<h1 style='text-align: center; padding-bottom: 0;'>PAINEL DE GESTÃO DE PROJETOS</h1>", unsafe_allow_html=True)
-    st.markdown("<hr style='border: 1px solid rgba(150,150,150,0.3); margin-top: 1rem; margin-bottom: 2.5rem;'>", unsafe_allow_html=True)
-
-    def criar_card_kpi(titulo, valor):
-        return f"""
-        <div style="border: 1px solid rgba(150, 150, 150, 0.3); border-radius: 10px; padding: 20px 10px; text-align: center; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-            <div style="font-size: 0.9rem; font-weight: 600; opacity: 0.7; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">{titulo}</div>
-            <div style="font-size: 2.5rem; font-weight: 700; line-height: 1;">{valor}</div>
-        </div>
-        """
-
-    # === SUBSTITUA ESTE BLOCO ===
+     # === SUBSTITUA ESTE BLOCO ===
     c1, c2, c3, c4 = st.columns(4)
     
     # 1. Criamos placeholders vazios para os cards.
@@ -944,10 +929,6 @@ if not df.empty:
     card_c3.markdown(criar_card_kpi("PROJETOS COM ATRASO", proj_atrasados), unsafe_allow_html=True)
     card_c4.markdown(criar_card_kpi("TAREFAS PENDENTES EM ATRASO", tar_atrasadas), unsafe_allow_html=True)
     # ==============================
-    st.write("")
-    
-    # --- Abas com persistência de estado e borda inferior (CSS já aplicado) ---
-    opcoes_abas = ["Visão Geral", "Cronograma & Prazos", "Evolução & Ritmo", "Calendário", "Dados Detalhados"]
     st.write("")
     
     # --- Abas com persistência de estado e borda inferior (CSS já aplicado) ---
