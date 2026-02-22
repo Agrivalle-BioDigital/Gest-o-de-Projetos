@@ -881,7 +881,7 @@ if not df.empty:
     # --- TELA 1: VISÃO GERAL COM ABAS E BORDA INFERIOR ---
     # =====================================================================
     st.markdown("<hr style='border: 1px solid rgba(150,150,150,0.3); margin-top: 0; margin-bottom: 1rem;'>", unsafe_allow_html=True)
-    st.markdown("<h1 style='text-align: center; padding-bottom: 0;'>PAINEL DE GESTÃO DE PROJETOS</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; padding-bottom: 0;'>PAINEL DE GESTÃO CEPA</h1>", unsafe_allow_html=True)
     st.markdown("<hr style='border: 1px solid rgba(150,150,150,0.3); margin-top: 1rem; margin-bottom: 2.5rem;'>", unsafe_allow_html=True)
 
     def criar_card_kpi(titulo, valor):
