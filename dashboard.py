@@ -895,8 +895,6 @@ if not df.empty:
     c1, c2, c3, c4 = st.columns(4)
     
     # 1. Criamos placeholders vazios para os cards.
-    # Isso garante que todos os cards fiquem alinhados no topo da tela, 
-    # e o toggle que vem abaixo não "empurre" o card 3 para baixo.
     card_c1 = c1.empty()
     card_c2 = c2.empty()
     card_c3 = c3.empty()
@@ -904,24 +902,35 @@ if not df.empty:
 
     # 2. Inserimos o botão "Apenas Em Andamento" exatamente na coluna 3.
     with c3:
-        # Usamos toggle pelo visual mais clean. Se preferir checkbox, troque para st.checkbox
         apenas_em_andamento = st.toggle("Apenas Em Andamento", value=True)
 
     # 3. Lógica de Filtragem dos Dados
     df_proj_unicos = df_f.drop_duplicates(subset=['Projeto'])
     
     if apenas_em_andamento:
-        # Conta projetos com atraso E que NÃO estão com status Concluído
+        # Filtra projetos E tarefas ativas (exclui projetos concluídos)
         df_atrasados = df_proj_unicos[
             (df_proj_unicos['Dias_Atraso'] > 0) & 
             (df_proj_unicos['Status_Projeto'].str.strip().str.lower() != 'concluído')
         ]
+        
+        # Filtra tarefas: tem que ter "Atraso", a tarefa NÃO pode estar concluída, 
+        # e o projeto NÃO pode estar concluído
+        tar_atrasadas = len(df_f[
+            (df_f['Status_Prazo_Tarefa'].str.contains("Atraso", case=False, na=False)) & 
+            (df_f['Concluido'].str.strip().str.lower() != 'sim') & 
+            (df_f['Status_Projeto'].str.strip().str.lower() != 'concluído')
+        ])
     else:
-        # Conta todo o histórico de atrasos
+        # Mostra todo o histórico de atrasos (incluindo o que já foi finalizado)
         df_atrasados = df_proj_unicos[df_proj_unicos['Dias_Atraso'] > 0]
         
+        # Considera todas as tarefas que carregam o status de Atraso
+        tar_atrasadas = len(df_f[
+            (df_f['Status_Prazo_Tarefa'].str.contains("Atraso", case=False, na=False))
+        ])
+        
     proj_atrasados = len(df_atrasados)
-    tar_atrasadas = len(df_f[df_f['Status_Prazo_Tarefa'].str.contains("Atraso", case=False, na=False)])
 
     # 4. Injetamos os cards nos espaços que reservamos lá no início
     card_c1.markdown(criar_card_kpi("PROJETOS", df_f['Projeto'].nunique()), unsafe_allow_html=True)
