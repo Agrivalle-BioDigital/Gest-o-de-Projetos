@@ -891,16 +891,63 @@ if not df.empty:
         </div>
         """
 
-    c1, c2, c3, c4 = st.columns(4)
-    df_proj_unicos = df_f.drop_duplicates(subset=['Projeto'])
-    proj_atrasados = len(df_proj_unicos[df_proj_unicos['Dias_Atraso'] > 0])
-    tar_atrasadas = len(df_f[df_f['Status_Prazo_Tarefa'].str.contains("Atraso", case=False, na=False)])
-    
-    c1.markdown(criar_card_kpi("PROJETOS", df_f['Projeto'].nunique()), unsafe_allow_html=True)
-    c2.markdown(criar_card_kpi("TAREFAS", len(df_f)), unsafe_allow_html=True)
-    c3.markdown(criar_card_kpi("PROJETOS COM ATRASO", proj_atrasados), unsafe_allow_html=True)
-    c4.markdown(criar_card_kpi("TAREFAS PENDENTES EM ATRASO", tar_atrasadas), unsafe_allow_html=True)
+      # =====================================================================
+    # --- TELA 1: VISÃO GERAL COM ABAS E BORDA INFERIOR ---
+    # =====================================================================
+    st.markdown("<hr style='border: 1px solid rgba(150,150,150,0.3); margin-top: 0; margin-bottom: 1rem;'>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; padding-bottom: 0;'>PAINEL DE GESTÃO DE PROJETOS</h1>", unsafe_allow_html=True)
+    st.markdown("<hr style='border: 1px solid rgba(150,150,150,0.3); margin-top: 1rem; margin-bottom: 2.5rem;'>", unsafe_allow_html=True)
 
+    def criar_card_kpi(titulo, valor):
+        return f"""
+        <div style="border: 1px solid rgba(150, 150, 150, 0.3); border-radius: 10px; padding: 20px 10px; text-align: center; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <div style="font-size: 0.9rem; font-weight: 600; opacity: 0.7; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">{titulo}</div>
+            <div style="font-size: 2.5rem; font-weight: 700; line-height: 1;">{valor}</div>
+        </div>
+        """
+
+    # === SUBSTITUA ESTE BLOCO ===
+    c1, c2, c3, c4 = st.columns(4)
+    
+    # 1. Criamos placeholders vazios para os cards.
+    # Isso garante que todos os cards fiquem alinhados no topo da tela, 
+    # e o toggle que vem abaixo não "empurre" o card 3 para baixo.
+    card_c1 = c1.empty()
+    card_c2 = c2.empty()
+    card_c3 = c3.empty()
+    card_c4 = c4.empty()
+
+    # 2. Inserimos o botão "Apenas Em Andamento" exatamente na coluna 3.
+    with c3:
+        # Usamos toggle pelo visual mais clean. Se preferir checkbox, troque para st.checkbox
+        apenas_em_andamento = st.toggle("Apenas Em Andamento", value=True)
+
+    # 3. Lógica de Filtragem dos Dados
+    df_proj_unicos = df_f.drop_duplicates(subset=['Projeto'])
+    
+    if apenas_em_andamento:
+        # Conta projetos com atraso E que NÃO estão com status Concluído
+        df_atrasados = df_proj_unicos[
+            (df_proj_unicos['Dias_Atraso'] > 0) & 
+            (df_proj_unicos['Status_Projeto'].str.strip().str.lower() != 'concluído')
+        ]
+    else:
+        # Conta todo o histórico de atrasos
+        df_atrasados = df_proj_unicos[df_proj_unicos['Dias_Atraso'] > 0]
+        
+    proj_atrasados = len(df_atrasados)
+    tar_atrasadas = len(df_f[df_f['Status_Prazo_Tarefa'].str.contains("Atraso", case=False, na=False)])
+
+    # 4. Injetamos os cards nos espaços que reservamos lá no início
+    card_c1.markdown(criar_card_kpi("PROJETOS", df_f['Projeto'].nunique()), unsafe_allow_html=True)
+    card_c2.markdown(criar_card_kpi("TAREFAS", len(df_f)), unsafe_allow_html=True)
+    card_c3.markdown(criar_card_kpi("PROJETOS COM ATRASO", proj_atrasados), unsafe_allow_html=True)
+    card_c4.markdown(criar_card_kpi("TAREFAS PENDENTES EM ATRASO", tar_atrasadas), unsafe_allow_html=True)
+    # ==============================
+    st.write("")
+    
+    # --- Abas com persistência de estado e borda inferior (CSS já aplicado) ---
+    opcoes_abas = ["Visão Geral", "Cronograma & Prazos", "Evolução & Ritmo", "Calendário", "Dados Detalhados"]
     st.write("")
     
     # --- Abas com persistência de estado e borda inferior (CSS já aplicado) ---
