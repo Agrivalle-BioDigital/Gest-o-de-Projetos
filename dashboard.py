@@ -150,8 +150,8 @@ if "projeto" in params:
 # =====================================================================
 # --- FUNÇÕES DE BACKEND (inalteradas) ---
 # =====================================================================
-ARQUIVO_ENTRADA = 'Sumarização de Atividades.xlsm'
-ARQUIVO_SAIDA = 'Base_Dados_Consolidada.xlsx'
+ARQUIVO_ENTRADA = 'CEPA Ações.xlsm'
+ARQUIVO_SAIDA = 'Base_Dados_Consolidada_CEPA.xlsx'
 
 def obter_caminho(nome_arquivo):
     if getattr(sys, 'frozen', False):
@@ -260,7 +260,7 @@ def reconstruir_banco_de_dados():
                     df_aba = pd.read_excel(xls, sheet_name=aba_real, header=None)
                     
                     status = safe_iloc(df_aba, 0, 8)  
-                    cliente = safe_iloc(df_aba, 1, 8) 
+                    area = safe_iloc(df_aba, 1, 8) 
                     prazo_proj = df_aba.iloc[2, 1]    
                     inicio_proj = df_aba.iloc[2, 5]   
                     classe_proj = safe_iloc(df_aba, 3, 1) or "Média" 
@@ -301,7 +301,7 @@ def reconstruir_banco_de_dados():
                     if not tarefas.empty:
                         tarefas['Projeto'] = str(projeto_nome)
                         tarefas['Status_Projeto'] = status
-                        tarefas['Área'] = cliente
+                        tarefas['Área'] = area
                         tarefas['Prazo_Projeto'] = prazo_proj
                         tarefas['Inicio_Projeto'] = inicio_proj
                         tarefas['Data_Conclusao_Projeto'] = data_conclusao_proj
@@ -462,7 +462,7 @@ def salvar_alteracoes_no_excel(projeto_nome, dados_editados, status_tarefas, con
     except Exception as e:
         return False, f"Erro interno ao salvar: {e}"
 
-def executar_criacao_projeto(titulo, cliente, prazo_proj, objetivo, classe_proj, obs, resumo, passos, riscos, df_tarefas):
+def executar_criacao_projeto(titulo, area, prazo_proj, objetivo, classe_proj, obs, resumo, passos, riscos, df_tarefas):
     arquivo_abs = os.path.abspath(obter_caminho(ARQUIVO_ENTRADA))
     caminho_lock = obter_caminho(ARQUIVO_ENTRADA + ".lock")
     lock = FileLock(caminho_lock, timeout=20)
@@ -507,7 +507,7 @@ def executar_criacao_projeto(titulo, cliente, prazo_proj, objetivo, classe_proj,
                         
                 if ws_nova:
                     ws_nova.Range("I1").Value = "Em Andamento"
-                    ws_nova.Range("I2").Value = cliente
+                    ws_nova.Range("I2").Value = area
                     ws_nova.Range("F3").Value = formatar_data(datetime.today())
                     if prazo_proj: ws_nova.Range("B3").Value = formatar_data(prazo_proj)
                     
@@ -557,7 +557,7 @@ def modal_novo_projeto():
     
     col1, col2 = st.columns(2)
     titulo_novo = col1.text_input("Título do Projeto *", max_chars=30)
-    cliente_novo = col2.text_input("Área(s) *", help="Separe por ponto-e-vírgula se for mais de um.")
+    area_novo = col2.text_input("Área(s) *", help="Separe por ponto-e-vírgula se for mais de um.")
     
     col3, col4 = st.columns(2)
     classe_novo = col3.selectbox("Prioridade", ["Alta", "Média", "Baixa"], index=1)
@@ -602,7 +602,7 @@ def modal_novo_projeto():
             
         with st.spinner("Acionando motor do Excel em segundo plano... Isso pode levar alguns segundos."):
             sucesso, msg = executar_criacao_projeto(
-                titulo_novo, cliente_novo, prazo_novo, objetivo_novo, classe_novo, obs_novo, resumo_novo, passos_novo, riscos_novo, tarefas_validas
+                titulo_novo, area_novo, prazo_novo, objetivo_novo, classe_novo, obs_novo, resumo_novo, passos_novo, riscos_novo, tarefas_validas
             )
             if sucesso:
                 st.success(msg)
@@ -645,12 +645,12 @@ if not df.empty:
     st.sidebar.markdown("<br><hr style='border:1px solid white; opacity:0.3;'><br>", unsafe_allow_html=True)
     st.sidebar.header("Filtros Globais")
     
-    todos_clientes = df['Área'].dropna().unique().tolist()
-    set_clientes = set()
-    for item in todos_clientes:
-        for p in item.split(';'): set_clientes.add(p.strip())
+    todos_areas = df['Área'].dropna().unique().tolist()
+    set_areas = set()
+    for item in todos_areas:
+        for p in item.split(';'): set_areas.add(p.strip())
     
-    cli_sel = st.sidebar.selectbox("Área", ['Todos'] + sorted(list(set_clientes)))
+    cli_sel = st.sidebar.selectbox("Área", ['Todos'] + sorted(list(set_areas)))
     sts_sel = st.sidebar.selectbox("Status Projeto", ['Todos'] + sorted(df['Status_Projeto'].unique().tolist()))
     
     if 'Ano_Inicio' in df.columns:
@@ -704,8 +704,8 @@ if not df.empty:
             st.markdown('</div>', unsafe_allow_html=True)
 
             st.markdown(f"<h1 style='color: #FF4F00; margin-bottom: 0rem;'>{info['Projeto']}</h1>", unsafe_allow_html=True)
-            cliente_display = info.get('Área', 'Não informado')
-            st.markdown(f"<h4 style='color: #666; margin-top: 0rem; font-weight: 500;'>Área(s): {cliente_display}</h4>", unsafe_allow_html=True)
+            area_display = info.get('Área', 'Não informado')
+            st.markdown(f"<h4 style='color: #666; margin-top: 0rem; font-weight: 500;'>Área(s): {area_display}</h4>", unsafe_allow_html=True)
             st.write("")
             
             hoje = datetime.today()
@@ -1215,4 +1215,4 @@ if not df.empty:
         )
 
 else:
-    st.warning("Arquivo 'Base_Dados_Consolidada.xlsx' não encontrado na pasta do aplicativo.")
+    st.warning("Arquivo 'Base_Dados_Consolidada_CEPA.xlsx' não encontrado na pasta do aplicativo.")
