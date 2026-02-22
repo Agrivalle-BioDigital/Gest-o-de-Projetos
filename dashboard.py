@@ -849,7 +849,7 @@ if not df.empty:
                         tarefas_status[chave_unica] = {'concluido': done_new, 'prazo': prazo_new, 'data_conclusao': conclusao_new}
 
                     st.write("---")
-                    st.subheader("➕ Adicionar Nova Tarefa (Opcional)")
+                    st.subheader("Adicionar Nova Tarefa (Opcional)")
                     col_nt1, col_nt2 = st.columns([3, 1])
                     nova_tarefa_desc = col_nt1.text_input("Descrição da Nova Tarefa")
                     nova_tarefa_prazo = col_nt2.date_input("Prazo da Nova Tarefa", value=None)
