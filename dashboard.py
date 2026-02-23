@@ -18,9 +18,7 @@ warnings.simplefilter(action='ignore', category=UserWarning)
 
 st.set_page_config(page_title="Gestão de Projetos", layout="wide")
 
-# =====================================================================
-# --- CSS CUSTOMIZADO E ESTILIZAÇÃO (com borda inferior nas abas) ---
-# =====================================================================
+# CSS
 st.markdown("""
 <style>
     /* Sidebar */
@@ -147,9 +145,7 @@ if "projeto" in params:
     st.session_state.modo_edicao = False 
     st.query_params.clear()
 
-# =====================================================================
-# --- FUNÇÕES DE BACKEND (inalteradas) ---
-# =====================================================================
+# FUNÇÕES DE BACKEND
 ARQUIVO_ENTRADA = 'CEPA Ações.xlsm'
 ARQUIVO_SAIDA = 'Base_Dados_Consolidada_CEPA.xlsx'
 
@@ -548,9 +544,7 @@ def executar_criacao_projeto(titulo, area, prazo_proj, objetivo, classe_proj, ob
     except Exception as e:
         return False, f"Erro na criação: {e}"
 
-# =====================================================================
-# --- POP-UP (MODAL) DE CRIAÇÃO ---
-# =====================================================================
+# POP-UP (MODAL) DE CRIAÇÃO
 @st.dialog("Formulário de Criação de Projeto", width="large")
 def modal_novo_projeto():
     st.write("Preencha os dados abaixo para inicializar a aba perfeitamente.")
@@ -611,15 +605,12 @@ def modal_novo_projeto():
             else:
                 st.error(msg)
 
-# =====================================================================
-# --- INTERFACE PRINCIPAL ---
-# =====================================================================
+# INTERFACE PRINCIPAL
 
-# --- NOVO: AUTO-INICIALIZAÇÃO DO BANCO DE DADOS ---
 if 'banco_inicializado' not in st.session_state:
     caminho_entrada = obter_caminho(ARQUIVO_ENTRADA)
     
-    # Só tenta reconstruir se a planilha macro (CEPA Ações.xlsm) existir na pasta
+    # Só tenta reconstruir se a planilha macro (.xlsm) existir na pasta
     if os.path.exists(caminho_entrada):
         with st.spinner("Inicializando e Sincronizando banco de dados..."):
             reconstruir_banco_de_dados()
@@ -627,7 +618,6 @@ if 'banco_inicializado' not in st.session_state:
             
     # Marca que já foi inicializado para não travar o app nos próximos cliques
     st.session_state.banco_inicializado = True
-# --------------------------------------------------
 
 df = carregar_dados()
 
@@ -690,26 +680,23 @@ if not df.empty:
     if sts_sel != 'Todos': df_f = df_f[df_f['Status_Projeto'] == sts_sel]
     if ano_sel: df_f = df_f[df_f['Ano_Inicio'].isin(ano_sel)]
 
-    # =====================================================================
-    # --- TELA 2: VISÃO DETALHADA DO PROJETO (com barra de navegação simplificada) ---
-    # =====================================================================
+    # TELA 2: VISÃO DETALHADA DO PROJETO (com barra de navegação simplificada)
     if st.session_state.projeto_ativo_state != "-- Visão Geral (Dashboard) --":
         df_proj = df[df['Projeto'] == st.session_state.projeto_ativo_state].copy()
         
         if not df_proj.empty:
             info = df_proj.iloc[0] 
             
-            # --- BARRA DE NAVEGAÇÃO SIMPLIFICADA (apenas dois botões) ---
+            # BARRA DE NAVEGAÇÃO SIMPLIFICADA (apenas dois botões)
             st.markdown('<div class="sticky-nav">', unsafe_allow_html=True)
             col_esq, col_dir = st.columns(2)
             with col_esq:
-                # 1. Criamos a função de callback
+                # Função de callback
                 def ir_para_inicio():
                     st.session_state.projeto_ativo_state = "-- Visão Geral (Dashboard) --"
                     st.session_state.modo_edicao = False
                 
-                # 2. Atrelamos a função ao botão usando on_click
-                # O Streamlit fará o rerun automaticamente, não precisamos mais do st.rerun()
+                # Função atrelada ao botão usando on_click, Streamlit fará o rerun automaticamente, sem precisar do st.rerun()
                 st.button("Início", use_container_width=True, on_click=ir_para_inicio)
             with col_dir:
                 icone = "Cancelar Edição" if st.session_state.modo_edicao else "Editar"
@@ -783,7 +770,7 @@ if not df.empty:
                 )
 
             else:
-                st.info("💡 **Modo de Edição Ativo:** Altere os dados abaixo e clique em 'Salvar Alterações'.")
+                st.info("**Modo de Edição Ativo:** Altere os dados abaixo e clique em 'Salvar Alterações'.")
                 
                 with st.form("form_edicao_projeto"):
                     st.subheader("Prazos Principais do Projeto")
@@ -870,16 +857,14 @@ if not df.empty:
                         
                     if sucesso:
                         st.session_state.modo_edicao = False
-                        st.success("✅ " + msg)
+                        st.success(msg)
                         st.rerun() 
                     else:
-                        st.error(f"❌ Erro: {msg}")
+                        st.error(f"Erro: {msg}")
 
         st.stop()
 
-    # =====================================================================
-    # --- TELA 1: VISÃO GERAL COM ABAS E BORDA INFERIOR ---
-    # =====================================================================
+    # TELA 1: VISÃO GERAL COM ABAS E BORDA INFERIOR
     st.markdown("<hr style='border: 1px solid rgba(150,150,150,0.3); margin-top: 0; margin-bottom: 1rem;'>", unsafe_allow_html=True)
     st.markdown("<h1 style='text-align: center; padding-bottom: 0;'>PAINEL DE GESTÃO CEPA</h1>", unsafe_allow_html=True)
     st.markdown("<hr style='border: 1px solid rgba(150,150,150,0.3); margin-top: 1rem; margin-bottom: 2.5rem;'>", unsafe_allow_html=True)
@@ -892,31 +877,29 @@ if not df.empty:
         </div>
         """
 
-     # === SUBSTITUA ESTE BLOCO ===
     c1, c2, c3, c4 = st.columns(4)
     
-    # 1. Criamos placeholders vazios para os cards.
+    # Placeholders vazios para os cards.
     card_c1 = c1.empty()
     card_c2 = c2.empty()
     card_c3 = c3.empty()
     card_c4 = c4.empty()
 
-    # 2. Inserimos o botão "Apenas Em Andamento" exatamente na coluna 3.
+    # Botão "Apenas Em Andamento" exatamente na coluna 3.
     with c3:
         apenas_em_andamento = st.toggle("Apenas Em Andamento", value=True)
 
-    # 3. Lógica de Filtragem dos Dados
+    # Lógica de Filtragem dos Dados
     df_proj_unicos = df_f.drop_duplicates(subset=['Projeto'])
     
     if apenas_em_andamento:
-        # Filtra projetos E tarefas ativas (exclui projetos concluídos)
+        # Filtra projetos e tarefas ativas (exclui projetos concluídos)
         df_atrasados = df_proj_unicos[
             (df_proj_unicos['Dias_Atraso'] > 0) & 
             (df_proj_unicos['Status_Projeto'].str.strip().str.lower() != 'concluído')
         ]
         
-        # Filtra tarefas: tem que ter "Atraso", a tarefa NÃO pode estar concluída, 
-        # e o projeto NÃO pode estar concluído
+        # Filtra tarefas: tem que ter "Atraso", a tarefa e projeto não podem estar concluídos
         tar_atrasadas = len(df_f[
             (df_f['Status_Prazo_Tarefa'].str.contains("Atraso", case=False, na=False)) & 
             (df_f['Concluido'].str.strip().str.lower() != 'sim') & 
@@ -933,15 +916,14 @@ if not df.empty:
         
     proj_atrasados = len(df_atrasados)
 
-    # 4. Injetamos os cards nos espaços que reservamos lá no início
+    # Cards nos espaços que reservdos no início
     card_c1.markdown(criar_card_kpi("PROJETOS", df_f['Projeto'].nunique()), unsafe_allow_html=True)
     card_c2.markdown(criar_card_kpi("TAREFAS", len(df_f)), unsafe_allow_html=True)
     card_c3.markdown(criar_card_kpi("PROJETOS COM ATRASO", proj_atrasados), unsafe_allow_html=True)
     card_c4.markdown(criar_card_kpi("TAREFAS PENDENTES EM ATRASO", tar_atrasadas), unsafe_allow_html=True)
-    # ==============================
     st.write("")
     
-    # --- Abas com persistência de estado e borda inferior (CSS já aplicado) ---
+    # Abas com persistência de estado e borda inferior
     opcoes_abas = ["Visão Geral", "Cronograma & Prazos", "Evolução & Ritmo", "Calendário", "Dados Detalhados"]
     
     if hasattr(st, "segmented_control"):
@@ -966,7 +948,7 @@ if not df.empty:
         st.session_state.aba_ativa = aba_selecionada
     st.markdown("<hr style='border: 1px solid rgba(150,150,150,0.3); margin-top: -1.05rem; margin-bottom: 2rem;'>", unsafe_allow_html=True)
 
-    # Conteúdo das abas (usando st.session_state.aba_ativa) - igual ao anterior
+    # Conteúdo das abas (usando st.session_state.aba_ativa)
     if st.session_state.aba_ativa == "Visão Geral":
         co1, co2 = st.columns(2)
         with co1:
